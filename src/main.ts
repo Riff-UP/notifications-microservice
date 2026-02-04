@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { envs } from './config';
 
 async function bootstrap() {
 
@@ -12,11 +13,11 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options:{
-        port: 3003
+        port: envs.port
       }
     }
   );
   await app.listen();
-  logger.log('Microservice is listening on port 3003');
+  logger.log(`Microservice is listening on port ${envs.port}`);
 }
 bootstrap();
