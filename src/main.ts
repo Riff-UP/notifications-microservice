@@ -14,7 +14,7 @@ async function bootstrap() {
       options: {
         //Esta implementación permite el uso de la red de los containers de docker
         //Permite el asilamiento del exterior priorizando seguridad
-        host: '0.0.0.0',
+        host: envs.host,
         port: envs.port,
       },
     },
