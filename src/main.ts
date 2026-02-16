@@ -1,25 +1,35 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Transport } from '@nestjs/microservices';
 import { envs } from './config';
 
 async function bootstrap() {
   const logger = new Logger('Notifications-MS');
 
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AppModule,
-    {
-      transport: Transport.TCP,
-      options: {
-        //Esta implementación permite el uso de la red de los containers de docker
-        //Permite el asilamiento del exterior priorizando seguridad
-        host: envs.host,
-        port: envs.port,
+  //Crear aplicación HTTP normal
+  const app = await NestFactory.create(AppModule);
+
+  //Conectar RabbitMQ como microservicio
+  app.connectMicroservice({
+    transport: Transport.RMQ,
+    options: {
+      urls: [envs.rabbit_url],
+      queue: 'notifications.queue',
+      queueOptions: {
+        durable: true,
       },
     },
-  );
-  await app.listen();
-  logger.log(`Microservice is listening on port ${envs.port}`);
+  });
+
+  //Iniciar Rabbit
+  await app.startAllMicroservices();
+
+  //Iniciar HTTP
+  await app.listen(envs.port);
+
+  logger.log(`HTTP running on port ${envs.port}`);
+  logger.log(`RabbitMQ connected`);
 }
+
 bootstrap();
