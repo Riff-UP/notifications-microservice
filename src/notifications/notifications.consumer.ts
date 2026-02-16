@@ -5,5 +5,4 @@ import { EventPattern } from '@nestjs/microservices';
 export class NotificationsConsumer {
 
     @EventPattern('post.crated')
-    handle
 }
