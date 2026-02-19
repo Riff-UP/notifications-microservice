@@ -2,7 +2,6 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 
 @Controller()
 export class NotificationsController {
@@ -14,22 +13,12 @@ export class NotificationsController {
   }
 
   @MessagePattern('findAllNotifications')
-  findAll() {
-    return this.notificationsService.findAll();
-  }
-
-  @MessagePattern('findOneNotification')
-  findOne(@Payload() id: number) {
-    return this.notificationsService.findOne(id);
-  }
-
-    @MessagePattern('updateNotification')
-  update(@Payload() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationsService.update(updateNotificationDto.id, updateNotificationDto);
+  findAll(@Payload() userIdReceiver: string) {
+    return this.notificationsService.findAll(userIdReceiver);
   }
 
   @MessagePattern('removeNotification')
-  remove(@Payload() id: number) {
+  remove(@Payload() id: string) {
     return this.notificationsService.remove(id);
   }
 }

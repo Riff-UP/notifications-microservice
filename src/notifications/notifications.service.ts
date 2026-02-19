@@ -1,26 +1,70 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Notification } from 'src/schemas/notifications-schema';
+import { Model } from 'mongoose';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
-export class NotificationsService {
-  create(createNotificationDto: CreateNotificationDto) {
-    return 'This action adds a new notification';
+export class NotificationsService implements OnModuleInit{
+
+  constructor(
+    @InjectModel(Notification.name) private readonly notificationModel : Model<Notification>
+  ){}
+
+  private readonly logger = new Logger('NotificationsService')
+
+  onModuleInit() {
+    this.logger.log('NotificationsService initialized');
+  }
+  
+  async create(createNotificationDto: CreateNotificationDto) {
+    try{
+      return await this.notificationModel.create(createNotificationDto)
+    }catch(error){
+      throw new RpcException({
+        message: 'Failed to create notification',
+        code: 'CREATE_FAILED',
+        status: 500
+      })
+    }
   }
 
-  findAll() {
-    return `This action returns all notifications`;
+  async findAll(userIdReceiver: string) {
+    try{
+      return await this.notificationModel
+      .find({userIdReceiver})
+      .sort({ createdAt: -1 })
+      .exec();
+    }catch(error){
+      throw new RpcException({
+        message: 'Failed to retrieve notifications',
+        code: 'RETRIEVE_FAILED',
+        status: 500
+      })
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
+  async remove(id: string) {
+    // Validar que el id tenga formato válido de ObjectId
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      throw new RpcException({
+        message: `Invalid notification id format`,
+        statusCode: 400
+      });
   }
 
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
-  }
+    const notification = await this.notificationModel
+      .findByIdAndDelete(id)
+      .exec();
 
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+    if (!notification) {
+      throw new RpcException({
+        message: `Notification with id ${id} not found`,
+        statusCode: 404
+      });
+    }
+
+    return notification;
   }
 }
