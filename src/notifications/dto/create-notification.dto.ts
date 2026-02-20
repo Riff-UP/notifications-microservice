@@ -1,1 +1,5 @@
-export class CreateNotificationDto {}
+export class CreateNotificationDto {
+  userIdReceiver: string;
+  type: string;
+  message: string;
+}
