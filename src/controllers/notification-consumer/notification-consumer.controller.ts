@@ -1,5 +1,5 @@
 import { Controller, Inject } from '@nestjs/common';
-import { EventPattern } from '@nestjs/microservices';
+import { EventPattern, Payload } from '@nestjs/microservices';
 import { resetPassword } from 'src/services/resetPassword.service';
 
 @Controller('notification-consumer')
@@ -10,7 +10,7 @@ export class NotificationConsumerController {
   ) {}
 
   @EventPattern('send.resetPassword')
-  async handleFollowEvent(data: any) {
+  async handleFollowEvent(@Payload() data: any) {
     console.log('Evento recibido en consumer:', data);
     await this.resetPssw.sendPassWordResetEmail(data);
   }
