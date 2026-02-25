@@ -1,42 +1,65 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Notification } from './schemas/notification.schema';
+import { Resend } from 'resend';
+import { envs } from 'src/config';
+import { passwordResetTemplate } from './templates/password-reset.template';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly resend = new Resend(envs.resend_key) 
+
+  constructor(
+    @InjectModel(Notification.name) 
+    private readonly notificationModel: Model<Notification>
+  ) {}
+
+  async sendPassWordResetEmail(data: {
+    mail: string
+    userId: string
+    userName: string
+    token: string
+  }){
+    const resetUrl = `${envs.frontUrl}/reset-password?token=${data.token}`
+
+    await this.resend.emails.send({
+      from: 'Riff <no-reply@riff.com>',
+      to: data.mail,
+      subject: 'Recuperación de contraseña',
+      html: passwordResetTemplate(data.userName, resetUrl)
+    });
+  }
 
   async create(createNotificationDto: CreateNotificationDto) {
-    return this.prisma.notification.create({
-      data: createNotificationDto,
-    });
+    return this.notificationModel.create(createNotificationDto);
   }
 
   async findAll() {
-    return this.prisma.notification.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    return this.notificationModel.find().sort({ createdAt: -1 });
   }
 
   async findOne(id: string) {
-    return this.prisma.notification.findUnique({
-      where: { id },
-    });
+    const notification = await this.notificationModel.findById(id);
+    if (!notification) throw new NotFoundException(`Notification #${id} not found`);
+    return notification;
   }
 
   async update(id: string, updateNotificationDto: UpdateNotificationDto) {
-    return this.prisma.notification.update({
-      where: { id },
-      data: updateNotificationDto,
-    });
+    const notification = await this.notificationModel.findByIdAndUpdate(
+      id,
+      updateNotificationDto,
+      { new: true },
+    );
+    if (!notification) throw new NotFoundException(`Notification #${id} not found`);
+    return notification;
   }
 
   async remove(id: string) {
-    return this.prisma.notification.delete({
-      where: { id },
-    });
+    const notification = await this.notificationModel.findByIdAndDelete(id);
+    if (!notification) throw new NotFoundException(`Notification #${id} not found`);
+    return { message: 'Notification deleted successfully' };
   }
 }

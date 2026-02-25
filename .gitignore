@@ -2,6 +2,7 @@
 /dist
 /node_modules
 /build
+mongo_data/
 
 # Logs
 logs

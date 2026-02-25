@@ -5,7 +5,7 @@ import { resetTemplate } from './templates/resetTemplate';
 
 @Injectable()
 export class MailService {
-  private resend = new Resend(envs.resed_key);
+  private resend = new Resend(envs.resend_key);
 
   async sendPasswordReset(options: {
     to: string;
