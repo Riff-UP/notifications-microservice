@@ -10,27 +10,34 @@ import { passwordResetTemplate } from './templates/password-reset.template';
 
 @Injectable()
 export class NotificationsService {
-  private readonly resend = new Resend(envs.resend_key) 
+  private readonly resend = new Resend(envs.resend_key);
 
   constructor(
-    @InjectModel(Notification.name) 
-    private readonly notificationModel: Model<Notification>
+    @InjectModel(Notification.name)
+    private readonly notificationModel: Model<Notification>,
   ) {}
 
   async sendPassWordResetEmail(data: {
-    mail: string
-    userId: string
-    userName: string
-    token: string
-  }){
-    const resetUrl = `${envs.frontUrl}/reset-password?token=${data.token}`
+    mail: string;
+    userId: string;
+    userName: string;
+    token: string;
+  }) {
+    const resetUrl = `${envs.frontUrl}/reset-password?token=${data.token}`;
 
-    await this.resend.emails.send({
-      from: 'Riff <no-reply@riff.com>',
+    const { data: result, error } = await this.resend.emails.send({
+      from: 'Riff <onboarding@resend.dev>',
       to: data.mail,
       subject: 'Recuperación de contraseña',
-      html: passwordResetTemplate(data.userName, resetUrl)
+      html: passwordResetTemplate(data.userName, resetUrl),
     });
+
+    if (error) {
+      console.error('Error enviando email con Resend:', error);
+      throw error;
+    }
+
+    console.log('Email enviado correctamente:', result);
   }
 
   async create(createNotificationDto: CreateNotificationDto) {
@@ -43,7 +50,8 @@ export class NotificationsService {
 
   async findOne(id: string) {
     const notification = await this.notificationModel.findById(id);
-    if (!notification) throw new NotFoundException(`Notification #${id} not found`);
+    if (!notification)
+      throw new NotFoundException(`Notification #${id} not found`);
     return notification;
   }
 
@@ -53,13 +61,15 @@ export class NotificationsService {
       updateNotificationDto,
       { new: true },
     );
-    if (!notification) throw new NotFoundException(`Notification #${id} not found`);
+    if (!notification)
+      throw new NotFoundException(`Notification #${id} not found`);
     return notification;
   }
 
   async remove(id: string) {
     const notification = await this.notificationModel.findByIdAndDelete(id);
-    if (!notification) throw new NotFoundException(`Notification #${id} not found`);
+    if (!notification)
+      throw new NotFoundException(`Notification #${id} not found`);
     return { message: 'Notification deleted successfully' };
   }
 }

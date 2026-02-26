@@ -1,17 +1,17 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { MongooseModule } from "@nestjs/mongoose";
-import { NotificationsModule } from "./notifications/notifications.module";
-import { envs } from "./config";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { NotificationsModule } from './notifications/notifications.module';
+import { envs } from './config';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            envFilePath: '.env'
-        }),
-        MongooseModule.forRoot(envs.mongoUri),
-        NotificationsModule
-    ]
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    MongooseModule.forRoot(envs.mongoUri),
+    NotificationsModule,
+  ],
 })
 export class AppModule {}

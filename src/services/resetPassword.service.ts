@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Resend } from 'resend';
-import { envs } from 'src/config';
 import { MailService } from '../services/resend/mail.service';
 import { Logger } from '@nestjs/common';
 
