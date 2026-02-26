@@ -7,6 +7,7 @@ import { Notification } from './schemas/notification.schema';
 import { Resend } from 'resend';
 import { envs } from 'src/config';
 import { passwordResetTemplate } from './templates/password-reset.template';
+import { NotificationType } from './enum/notification.enum';
 
 @Injectable()
 export class NotificationsService {
@@ -72,4 +73,55 @@ export class NotificationsService {
       throw new NotFoundException(`Notification #${id} not found`);
     return { message: 'Notification deleted successfully' };
   }
+
+  async handleNewFollower(data: {
+    followerId: string;
+    followedId: string;
+  }){
+    return this.notificationModel.create({
+      userIdReceiver: data.followedId,
+      type: NotificationType.NEW_FOLLOWER,
+      message: 'You have a new follower'
+    })
+  }
+
+  async handleNewEvent(data: {
+    artistId: string
+    eventTitle: string
+    followers: string[]
+  }){
+    const notifications = data.followers.map(followerId => ({
+      userIdReceiver: followerId,
+      type: NotificationType.NEW_EVENT,
+      message: `New event ${data.eventTitle}`
+    }))
+    return this.notificationModel.insertMany(notifications)
+  }
+
+  async handleEventUpdate(data: {
+    artistId: string
+    eventTitle: string
+    followers: string[]
+  }){
+    const notifications = data.followers.map(followerId => ({
+      userIdReceiver: followerId,
+      type: NotificationType.EVENT_UPDATE,
+      message: `Event updated ${data.eventTitle}`
+    }))
+    return this.notificationModel.insertMany(notifications)
+  }
+
+  async handleEventCancelled(data: {
+    artistId: string
+    eventTitle: string
+    followers: string[]
+  }){
+    const notifications = data.followers.map(followerId => ({
+      userIdReceiver: followerId,
+      type: NotificationType.EVENT_CANCELLED,
+      message: `the event ${data.eventTitle} has been cancelled`
+    }))
+    return this.notificationModel.insertMany(notifications)
+  }
+
 }

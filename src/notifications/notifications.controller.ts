@@ -35,4 +35,39 @@ export class NotificationsController {
   remove(@Payload() id: string) {
     return this.notificationsService.remove(id);
   }
+
+  @EventPattern('new.follower')
+  async handleNewFollwer(@Payload() data:{
+    followerId: string;
+    followedId: string;
+  }){
+    return this.notificationsService.handleNewFollower(data)
+  }
+
+  @EventPattern('new.event')
+  async habdleNewEvent(@Payload() data: {
+    artistId: string
+    eventTitle: string
+    followers: string[]
+  }){
+    return this.notificationsService.handleNewEvent(data)
+  }
+
+  @EventPattern('event.update')
+  async handleEventUpdate(@Payload() data: {
+    artistId: string
+    eventTitle: string
+    followers: string[]
+  }){
+    return this.notificationsService.handleEventUpdate(data)
+  }
+
+  @EventPattern('event.cancelled')
+  async handleEventCancelled(@Payload() data: {
+    artistId: string
+    eventTitle: string
+    followers: string[]
+  }){
+    return this.notificationsService.handleEventCancelled(data)
+  }
 }

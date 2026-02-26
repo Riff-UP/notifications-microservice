@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import { envs } from './config';
 import { AppModule } from './app.module';
@@ -21,6 +21,12 @@ async function bootstrap() {
       },
     },
   });
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }))
 
   //Iniciar Rabbit
   await app.startAllMicroservices();
