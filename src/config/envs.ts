@@ -15,7 +15,7 @@ const envSchema = joi
     RABBIT_URL: joi.string(),
     RESEND_KEY: joi.string(),
     MONGO_URI: joi.string().required(),
-    FRONT_URL: joi.string().required()
+    FRONT_URL: joi.string().required(),
   })
   .unknown(true);
 
@@ -33,5 +33,5 @@ export const envs = {
   rabbit_url: envVars.RABBIT_URL,
   resend_key: envVars.RESEND_KEY,
   mongoUri: envVars.MONGO_URI,
-  frontUrl: envVars.FRONT_URL
+  frontUrl: envVars.FRONT_URL,
 };

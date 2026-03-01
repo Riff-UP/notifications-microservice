@@ -4,20 +4,20 @@
  */
 
 const typeLabels: Record<string, string> = {
-    new_post: 'Nuevo Post',
-    new_event: 'Nuevo Evento',
-    event_update: 'Evento Actualizado',
-    event_cancelled: 'Evento Cancelado',
+  new_post: 'Nuevo Post',
+  new_event: 'Nuevo Evento',
+  event_update: 'Evento Actualizado',
+  event_cancelled: 'Evento Cancelado',
 };
 
 export function contentNotificationTemplate(
-    followerName: string,
-    type: string,
-    message: string,
+  followerName: string,
+  type: string,
+  message: string,
 ): string {
-    const label = typeLabels[type] ?? type;
+  const label = typeLabels[type] ?? type;
 
-    return `
+  return `
     <!DOCTYPE html>
     <html>
       <head><meta charset="utf-8"></head>

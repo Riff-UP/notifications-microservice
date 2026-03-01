@@ -27,4 +27,4 @@ import { MailService } from '../services/mail/mail.service';
     ]),
   ],
 })
-export class NotificationsModule { }
+export class NotificationsModule {}

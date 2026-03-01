@@ -3,17 +3,17 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class FollowRef extends Document {
-    @Prop({ required: true })
-    follower_id!: string;
+  @Prop({ required: true })
+  follower_id!: string;
 
-    @Prop({ required: true })
-    follower_email!: string;
+  @Prop({ required: true })
+  follower_email!: string;
 
-    @Prop({ required: true })
-    follower_name!: string;
+  @Prop({ required: true })
+  follower_name!: string;
 
-    @Prop({ required: true })
-    followed_id!: string;
+  @Prop({ required: true })
+  followed_id!: string;
 }
 
 export const FollowRefSchema = SchemaFactory.createForClass(FollowRef);

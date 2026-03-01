@@ -7,49 +7,49 @@ import { UpdateNotificationDto } from '../../notifications/dto/update-notificati
 
 @Injectable()
 export class NotificationsCrudService {
-    private readonly logger = new Logger(NotificationsCrudService.name);
+  private readonly logger = new Logger(NotificationsCrudService.name);
 
-    constructor(
-        @InjectModel(Notification.name)
-        private readonly notificationModel: Model<Notification>,
-    ) { }
+  constructor(
+    @InjectModel(Notification.name)
+    private readonly notificationModel: Model<Notification>,
+  ) {}
 
-    async create(createNotificationDto: CreateNotificationDto) {
-        return this.notificationModel.create(createNotificationDto);
-    }
+  async create(createNotificationDto: CreateNotificationDto) {
+    return this.notificationModel.create(createNotificationDto);
+  }
 
-    async findAll() {
-        return this.notificationModel.find().sort({ createdAt: -1 });
-    }
+  async findAll() {
+    return this.notificationModel.find().sort({ createdAt: -1 });
+  }
 
-    async findByUser(userId: string) {
-        return this.notificationModel
-            .find({ userIdReceiver: userId })
-            .sort({ createdAt: -1 });
-    }
+  async findByUser(userId: string) {
+    return this.notificationModel
+      .find({ userIdReceiver: userId })
+      .sort({ createdAt: -1 });
+  }
 
-    async findOne(id: string) {
-        const notification = await this.notificationModel.findById(id);
-        if (!notification)
-            throw new NotFoundException(`Notification #${id} not found`);
-        return notification;
-    }
+  async findOne(id: string) {
+    const notification = await this.notificationModel.findById(id);
+    if (!notification)
+      throw new NotFoundException(`Notification #${id} not found`);
+    return notification;
+  }
 
-    async update(id: string, updateNotificationDto: UpdateNotificationDto) {
-        const notification = await this.notificationModel.findByIdAndUpdate(
-            id,
-            updateNotificationDto,
-            { new: true },
-        );
-        if (!notification)
-            throw new NotFoundException(`Notification #${id} not found`);
-        return notification;
-    }
+  async update(id: string, updateNotificationDto: UpdateNotificationDto) {
+    const notification = await this.notificationModel.findByIdAndUpdate(
+      id,
+      updateNotificationDto,
+      { new: true },
+    );
+    if (!notification)
+      throw new NotFoundException(`Notification #${id} not found`);
+    return notification;
+  }
 
-    async remove(id: string) {
-        const notification = await this.notificationModel.findByIdAndDelete(id);
-        if (!notification)
-            throw new NotFoundException(`Notification #${id} not found`);
-        return { message: 'Notification deleted successfully' };
-    }
+  async remove(id: string) {
+    const notification = await this.notificationModel.findByIdAndDelete(id);
+    if (!notification)
+      throw new NotFoundException(`Notification #${id} not found`);
+    return { message: 'Notification deleted successfully' };
+  }
 }

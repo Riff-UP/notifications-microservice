@@ -15,7 +15,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [envs.rabbit_url],
-      queue: 'notifications_queue',
+      queue: 'riff_queue',
       queueOptions: {
         durable: true,
       },

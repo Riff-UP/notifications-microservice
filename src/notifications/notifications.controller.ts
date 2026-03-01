@@ -8,7 +8,7 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 export class NotificationsController {
   constructor(
     private readonly notificationsService: NotificationsCrudService,
-  ) { }
+  ) {}
 
   @MessagePattern('createNotification')
   create(@Payload() createNotificationDto: CreateNotificationDto) {

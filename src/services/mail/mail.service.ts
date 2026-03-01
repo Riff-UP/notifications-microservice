@@ -6,47 +6,47 @@ import { contentNotificationTemplate } from '../ecst/templates/content-notificat
 
 @Injectable()
 export class MailService {
-    private readonly logger = new Logger(MailService.name);
-    private resend = new Resend(envs.resend_key);
+  private readonly logger = new Logger(MailService.name);
+  private resend = new Resend(envs.resend_key);
 
-    async sendPasswordReset(options: {
-        to: string;
-        name: string;
-        token: string;
-    }) {
-        const resetLink = `${envs.frontUrl}/reset-password?token=${options.token}`;
+  async sendPasswordReset(options: {
+    to: string;
+    name: string;
+    token: string;
+  }) {
+    const resetLink = `${envs.frontUrl}/reset-password?token=${options.token}`;
 
-        const result = await this.resend.emails.send({
-            from: 'Riff <onboarding@resend.dev>',
-            to: options.to,
-            subject: 'Recuperación de contraseña - Riff',
-            html: resetTemplate(options.name, resetLink),
-        });
+    const result = await this.resend.emails.send({
+      from: 'Riff <onboarding@resend.dev>',
+      to: options.to,
+      subject: 'Recuperación de contraseña - Riff',
+      html: resetTemplate(options.name, resetLink),
+    });
 
-        return result;
-    }
+    return result;
+  }
 
-    async sendContentNotification(options: {
-        to: string;
-        followerName: string;
-        type: string;
-        message: string;
-    }) {
-        this.logger.log(
-            `Sending content notification to ${options.to} [${options.type}]`,
-        );
+  async sendContentNotification(options: {
+    to: string;
+    followerName: string;
+    type: string;
+    message: string;
+  }) {
+    this.logger.log(
+      `Sending content notification to ${options.to} [${options.type}]`,
+    );
 
-        const result = await this.resend.emails.send({
-            from: 'Riff <onboarding@resend.dev>',
-            to: options.to,
-            subject: options.message,
-            html: contentNotificationTemplate(
-                options.followerName,
-                options.type,
-                options.message,
-            ),
-        });
+    const result = await this.resend.emails.send({
+      from: 'Riff <onboarding@resend.dev>',
+      to: options.to,
+      subject: options.message,
+      html: contentNotificationTemplate(
+        options.followerName,
+        options.type,
+        options.message,
+      ),
+    });
 
-        return result;
-    }
+    return result;
+  }
 }

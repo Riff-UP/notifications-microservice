@@ -8,7 +8,7 @@ export class NotificationConsumerController {
   constructor(
     private readonly resetPasswordService: ResetPasswordService,
     private readonly ecstService: EcstService,
-  ) { }
+  ) {}
 
   // ─── Password Reset (existente) ──────────────────────────────────
 
