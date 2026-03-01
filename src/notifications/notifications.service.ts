@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,11 +7,7 @@ import { Notification } from './schemas/notification.schema';
 import { Resend } from 'resend';
 import { envs } from 'src/config';
 import { passwordResetTemplate } from './templates/password-reset.template';
-<<<<<<< Updated upstream
-=======
-import { NotificationType } from './enum/notification.enum';
 import { RpcExceptionHelper } from 'src/common/helpers/rpc-custom-exception.helper';
->>>>>>> Stashed changes
 
 @Injectable()
 export class NotificationsService {
@@ -51,6 +47,12 @@ export class NotificationsService {
 
   async findAll() {
     return this.notificationModel.find().sort({ createdAt: -1 });
+  }
+
+  async findByUser(userIdReceiver: string) {
+    return this.notificationModel
+      .find({ userIdReceiver })
+      .sort({ createdAt: -1 });
   }
 
   async findOne(id: string) {

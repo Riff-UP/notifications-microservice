@@ -18,6 +18,11 @@ export class NotificationsController {
     return this.notificationsService.findAll();
   }
 
+  @MessagePattern('findNotificationsByUser')
+  findByUser(@Payload() userIdReceiver: string) {
+    return this.notificationsService.findByUser(userIdReceiver);
+  }
+
   @MessagePattern('findOneNotification')
   findOne(@Payload() id: string) {
     return this.notificationsService.findOne(id);
