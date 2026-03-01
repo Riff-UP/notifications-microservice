@@ -7,6 +7,11 @@ import { Notification } from './schemas/notification.schema';
 import { Resend } from 'resend';
 import { envs } from 'src/config';
 import { passwordResetTemplate } from './templates/password-reset.template';
+<<<<<<< Updated upstream
+=======
+import { NotificationType } from './enum/notification.enum';
+import { RpcExceptionHelper } from 'src/common/helpers/rpc-custom-exception.helper';
+>>>>>>> Stashed changes
 
 @Injectable()
 export class NotificationsService {
@@ -33,8 +38,8 @@ export class NotificationsService {
     });
 
     if (error) {
-      console.error('Error enviando email con Resend:', error);
-      throw error;
+      console.error('Error enviando email con Resend:', error)
+      RpcExceptionHelper.internal('Error sending email')
     }
 
     console.log('Email enviado correctamente:', result);
@@ -50,26 +55,26 @@ export class NotificationsService {
 
   async findOne(id: string) {
     const notification = await this.notificationModel.findById(id);
-    if (!notification)
-      throw new NotFoundException(`Notification #${id} not found`);
-    return notification;
+
+    if (!notification) RpcExceptionHelper.notFound('notification', id)
+    return notification!
   }
 
   async update(id: string, updateNotificationDto: UpdateNotificationDto) {
-    const notification = await this.notificationModel.findByIdAndUpdate(
+    await this.findOne(id)
+
+    return await this.notificationModel.findByIdAndUpdate(
       id,
       updateNotificationDto,
-      { new: true },
-    );
-    if (!notification)
-      throw new NotFoundException(`Notification #${id} not found`);
-    return notification;
+      {new: true}
+    )
   }
 
   async remove(id: string) {
-    const notification = await this.notificationModel.findByIdAndDelete(id);
-    if (!notification)
-      throw new NotFoundException(`Notification #${id} not found`);
-    return { message: 'Notification deleted successfully' };
+    await this.findOne(id)
+
+    await this.notificationModel.findByIdAndDelete(id)
+    
+    return {message : "Notification deleted succesfully"}
   }
 }
