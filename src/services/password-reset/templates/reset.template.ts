@@ -1,8 +1,8 @@
 export function resetTemplate(
-  name: string = 'juan',
-  resetLink: string = 'jaja',
+    name: string = 'juan',
+    resetLink: string = 'jaja',
 ) {
-  return `
+    return `
     <div style="font-family: Arial; padding:20px;">
       <h2>Hola ${name}</h2>
       <p>Recibimos una solicitud para restablecer tu contraseña en Riff.</p>

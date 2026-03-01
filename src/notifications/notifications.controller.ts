@@ -1,12 +1,14 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
-import { NotificationsService } from './notifications.service';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { NotificationsCrudService } from '../services/notifications/notifications-crud.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 
 @Controller()
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsCrudService,
+  ) { }
 
   @MessagePattern('createNotification')
   create(@Payload() createNotificationDto: CreateNotificationDto) {
