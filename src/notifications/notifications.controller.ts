@@ -3,12 +3,13 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { NotificationsCrudService } from '../services/notifications/notifications-crud.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Controller()
 export class NotificationsController {
   constructor(
     private readonly notificationsService: NotificationsCrudService,
-  ) {}
+  ) { }
 
   @MessagePattern('createNotification')
   create(@Payload() createNotificationDto: CreateNotificationDto) {
@@ -16,13 +17,18 @@ export class NotificationsController {
   }
 
   @MessagePattern('findAllNotifications')
-  findAll() {
-    return this.notificationsService.findAll();
+  findAll(@Payload() paginationDto: PaginationDto) {
+    return this.notificationsService.findAll(paginationDto);
   }
 
   @MessagePattern('findNotificationsByUser')
-  findByUser(@Payload() userIdReceiver: string) {
-    return this.notificationsService.findByUser(userIdReceiver);
+  findByUser(
+    @Payload() data: { userIdReceiver: string; pagination: PaginationDto },
+  ) {
+    return this.notificationsService.findByUser(
+      data.userIdReceiver,
+      data.pagination ?? {},
+    );
   }
 
   @MessagePattern('findOneNotification')
