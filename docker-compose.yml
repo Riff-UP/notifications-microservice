@@ -50,7 +50,7 @@ services:
     environment:
       - PORT=${PORT}
       - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@notifications-db:27017/${MONGO_DB_NAME}?authSource=admin
-      - RABBIT_URL=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@notifications-rabbit:5672
+      - RABBIT_URL=amqp://guest:guest@central-rabbit:5672
       - RESEND_KEY=${RESEND_KEY}
       - FRONT_URL=${FRONT_URL}
     depends_on:
