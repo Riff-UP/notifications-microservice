@@ -6,6 +6,7 @@ import { ResetPasswordEventDto } from 'src/notifications/dto/reset-password-even
 import { FollowCreatedEventDto } from 'src/notifications/dto/follow-created-event.dto';
 import { FollowRemovedEventDto } from 'src/notifications/dto/follow-removed-event.dto';
 import { ContentEventDto } from 'src/notifications/dto/content-event.dto';
+import { TokenGeneratedEventDto } from 'src/notifications/dto/token-generated-event.dto';
 
 @Controller('notification-consumer')
 export class NotificationConsumerController {
@@ -62,5 +63,12 @@ export class NotificationConsumerController {
   async handleEventCancelled(@Payload() data: ContentEventDto) {
     this.logger.log('Evento recibido — event.cancelled');
     await this.ecstService.handleContentEvent(data);
+  }
+
+  @EventPattern('auth.tokenGenerated')
+  async handleAuthTokenGenerated(@Payload() data: TokenGeneratedEventDto) {
+    this.logger.log('Evento recibido — auth.tokenGenerated');
+    this.logger.debug(JSON.stringify(data));
+    // Currently no action required in notifications service for this event.
   }
 }
