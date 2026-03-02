@@ -12,27 +12,59 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     networks:
-      - notifications-network
+      - riff-network
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', 'db.adminCommand({ ping: 1 })']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   notifications-rabbit:
     image: rabbitmq:3.12-management-alpine
     container_name: riff_notifications_rabbit
     restart: always
     ports:
-      - ${RABBITMQ_PORT:-5672}:5672
-      - ${RABBITMQ_MANAGEMENT_PORT:-15672}:15672
+      - ${RABBITMQ_PORT:-5673}:5672
+      - ${RABBITMQ_MANAGEMENT_PORT:-15673}:15672
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
     volumes:
       - rabbit_data:/var/lib/rabbitmq
     networks:
-      - notifications-network
+      - riff-network
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  notifications-ms:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: riff_notifications_ms
+    restart: always
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - PORT=${PORT}
+      - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@notifications-db:27017/${MONGO_DB_NAME}?authSource=admin
+      - RABBIT_URL=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@notifications-rabbit:5672
+      - RESEND_KEY=${RESEND_KEY}
+      - FRONT_URL=${FRONT_URL}
+    depends_on:
+      notifications-db:
+        condition: service_healthy
+      notifications-rabbit:
+        condition: service_healthy
+    networks:
+      - riff-network
 
 volumes:
   mongo_data:
   rabbit_data:
 
 networks:
-  notifications-network:
-    driver: bridge
+  riff-network:
+    external: true
