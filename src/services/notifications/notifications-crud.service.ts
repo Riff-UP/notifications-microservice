@@ -14,11 +14,12 @@ export class NotificationsCrudService {
   constructor(
     @InjectModel(Notification.name)
     private readonly notificationModel: Model<Notification>,
-  ) { }
+  ) {}
 
   async create(createNotificationDto: CreateNotificationDto) {
-    const notification =
-      await this.notificationModel.create(createNotificationDto);
+    const notification = await this.notificationModel.create(
+      createNotificationDto,
+    );
     return {
       statusCode: 201,
       message: 'Notification created successfully',

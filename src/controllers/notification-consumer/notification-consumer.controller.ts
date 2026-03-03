@@ -15,7 +15,7 @@ export class NotificationConsumerController {
   constructor(
     private readonly resetPasswordService: ResetPasswordService,
     private readonly ecstService: EcstService,
-  ) { }
+  ) {}
 
   // ─── Password Reset ──────────────────────────────────────────────
 
@@ -66,9 +66,21 @@ export class NotificationConsumerController {
   }
 
   @EventPattern('auth.tokenGenerated')
-  async handleAuthTokenGenerated(@Payload() data: TokenGeneratedEventDto) {
+  handleAuthTokenGenerated(@Payload() data: TokenGeneratedEventDto) {
     this.logger.log('Evento recibido — auth.tokenGenerated');
-    this.logger.debug(JSON.stringify(data));
+
+    // Normalizar estructura: soporta formato plano y anidado
+    const normalizedData = {
+      userId: data.userId || data.user?.id,
+      email: data.email || data.user?.email,
+      token: data.token,
+      meta: data.meta,
+    };
+
+    this.logger.debug(`Token generado para usuario: ${normalizedData.userId || 'unknown'}`);
+    this.logger.debug(JSON.stringify(normalizedData));
+
     // Currently no action required in notifications service for this event.
+    // Future: Podría usarse para auditoría o notificaciones de seguridad
   }
 }

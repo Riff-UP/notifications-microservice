@@ -17,4 +17,4 @@ import { PublisherService } from './common/publisher.service';
   providers: [PublisherService],
   exports: [PublisherService],
 })
-export class AppModule { }
+export class AppModule {}
