@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsModule } from './notifications/notifications.module';
 import { envs } from './config';
+import { PublisherService } from './common/publisher.service';
 
 @Module({
   imports: [
@@ -13,5 +14,7 @@ import { envs } from './config';
     MongooseModule.forRoot(envs.mongoUri),
     NotificationsModule,
   ],
+  providers: [PublisherService],
+  exports: [PublisherService],
 })
-export class AppModule {}
+export class AppModule { }
