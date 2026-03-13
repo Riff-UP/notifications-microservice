@@ -10,13 +10,13 @@ import {
   ChannelWrapper,
 } from 'amqp-connection-manager';
 import { Channel, ConsumeMessage } from 'amqplib';
-import { NotificationConsumerController } from '../controllers/notification-consumer/notification-consumer.controller';
 import { ResetPasswordEventDto } from '../notifications/dto/reset-password-event.dto';
 import { FollowCreatedEventDto } from '../notifications/dto/follow-created-event.dto';
 import { FollowRemovedEventDto } from '../notifications/dto/follow-removed-event.dto';
 import { ContentEventDto } from '../notifications/dto/content-event.dto';
-import { TokenGeneratedEventDto } from '../notifications/dto/token-generated-event.dto';
 import { envs } from '../config';
+import { ResetPasswordService } from '../services/password-reset/reset-password.service';
+import { EcstService } from '../services/ecst/ecst.service';
 
 interface RmqEnvelope {
   pattern: string;
@@ -34,7 +34,8 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
   private readonly BINDING_KEY = envs.rabbit_binding_key;
 
   constructor(
-    private readonly consumerController: NotificationConsumerController,
+    private readonly resetPasswordService: ResetPasswordService,
+    private readonly ecstService: EcstService,
   ) {}
 
   onModuleInit() {
@@ -106,44 +107,35 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
   private async dispatch(pattern: string | null, data: unknown): Promise<void> {
     switch (pattern) {
       case 'send.resetPassword':
-        await this.consumerController.handleResetPassword(
+        await this.resetPasswordService.sendPassWordResetEmail(
           data as ResetPasswordEventDto,
         );
         break;
       case 'follow.created':
-        await this.consumerController.handleFollowCreated(
+        await this.ecstService.handleFollowCreated(
           data as FollowCreatedEventDto,
         );
         break;
       case 'follow.removed':
-        await this.consumerController.handleFollowRemoved(
+        await this.ecstService.handleFollowRemoved(
           data as FollowRemovedEventDto,
         );
         break;
       case 'post.created':
-        await this.consumerController.handlePostCreated(
-          data as ContentEventDto,
-        );
+        await this.ecstService.handleContentEvent(data as ContentEventDto);
         break;
       case 'event.created':
-        await this.consumerController.handleEventCreated(
-          data as ContentEventDto,
-        );
+        await this.ecstService.handleContentEvent(data as ContentEventDto);
         break;
       case 'event.updated':
-        await this.consumerController.handleEventUpdated(
-          data as ContentEventDto,
-        );
+        await this.ecstService.handleContentEvent(data as ContentEventDto);
         break;
       case 'event.cancelled':
-        await this.consumerController.handleEventCancelled(
-          data as ContentEventDto,
-        );
+        await this.ecstService.handleContentEvent(data as ContentEventDto);
         break;
       case 'auth.tokenGenerated':
-        this.consumerController.handleAuthTokenGenerated(
-          data as TokenGeneratedEventDto,
-        );
+        this.logger.log('Evento recibido — auth.tokenGenerated');
+        this.logger.debug(JSON.stringify(data));
         break;
       default:
         this.logger.warn(
