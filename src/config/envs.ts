@@ -7,6 +7,7 @@ interface EnvVars {
   RABBIT_EXCHANGE?: string;
   RABBIT_QUEUE?: string;
   RABBIT_BINDING_KEY?: string;
+  DOMAIN?: string;
   RESEND_KEY: string;
   MONGO_URI: string;
   FRONT_URL: string;
@@ -19,6 +20,7 @@ const envSchema = joi
     RABBIT_EXCHANGE: joi.string(),
     RABBIT_QUEUE: joi.string(),
     RABBIT_BINDING_KEY: joi.string(),
+    DOMAIN: joi.string(),
     RESEND_KEY: joi.string(),
     MONGO_URI: joi.string().required(),
     FRONT_URL: joi.string().required(),
@@ -40,6 +42,7 @@ export const envs = {
   rabbit_exchange: envVars.RABBIT_EXCHANGE || 'riff_events',
   rabbit_queue: envVars.RABBIT_QUEUE || 'notifications_queue',
   rabbit_binding_key: envVars.RABBIT_BINDING_KEY || '#',
+  domain: envVars.DOMAIN || 'resend.dev',
   resend_key: envVars.RESEND_KEY,
   mongoUri: envVars.MONGO_URI,
   frontUrl: envVars.FRONT_URL,

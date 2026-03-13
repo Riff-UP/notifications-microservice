@@ -12,7 +12,9 @@ export class ResetPasswordService {
     userName: string;
     token: string;
   }) {
-    this.logger.log('Intentando enviar email de reseteo', data);
+    this.logger.log(
+      `Intentando enviar email de reseteo a ${data.mail} (user: ${data.userName})`,
+    );
     try {
       const result = await this.mailService.sendPasswordReset({
         to: data.mail,

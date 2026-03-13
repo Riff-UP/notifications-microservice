@@ -8,6 +8,16 @@ import { contentNotificationTemplate } from '../ecst/templates/content-notificat
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private resend = new Resend(envs.resend_key);
+  private readonly from = `Riff <onboarding@${envs.domain}>`;
+
+  private ensureResendSuccess(result: any, context: string) {
+    if (!result?.error) return result;
+
+    const name = result.error?.name ?? 'resend_error';
+    const message = result.error?.message ?? 'Unknown Resend error';
+    this.logger.error(`${context}: ${name} - ${message}`);
+    throw new Error(`${name}: ${message}`);
+  }
 
   async sendPasswordReset(options: {
     to: string;
@@ -17,13 +27,13 @@ export class MailService {
     const resetLink = `${envs.frontUrl}/reset-password?token=${options.token}`;
 
     const result = await this.resend.emails.send({
-      from: 'Riff <onboarding@resend.dev>',
+      from: this.from,
       to: options.to,
       subject: 'Recuperación de contraseña - Riff',
       html: resetTemplate(options.name, resetLink),
     });
 
-    return result;
+    return this.ensureResendSuccess(result, 'sendPasswordReset');
   }
 
   async sendContentNotification(options: {
@@ -37,7 +47,7 @@ export class MailService {
     );
 
     const result = await this.resend.emails.send({
-      from: 'Riff <onboarding@resend.dev>',
+      from: this.from,
       to: options.to,
       subject: options.message,
       html: contentNotificationTemplate(
@@ -47,6 +57,6 @@ export class MailService {
       ),
     });
 
-    return result;
+    return this.ensureResendSuccess(result, 'sendContentNotification');
   }
 }

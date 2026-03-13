@@ -137,6 +137,11 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
         this.logger.log('Evento recibido — auth.tokenGenerated');
         this.logger.debug(JSON.stringify(data));
         break;
+      case 'createNotification':
+        this.logger.debug(
+          'Pattern createNotification recibido en exchange de eventos; se ignora en este consumer',
+        );
+        break;
       default:
         this.logger.warn(
           `Pattern desconocido o sin envelope: "${pattern}" — ignorando`,
