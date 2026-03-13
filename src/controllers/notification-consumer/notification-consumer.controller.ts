@@ -30,12 +30,14 @@ export class NotificationConsumerController {
   @EventPattern('follow.created')
   async handleFollowCreated(@Payload() data: FollowCreatedEventDto) {
     this.logger.log('Evento recibido — follow.created');
+    this.logger.debug(`Payload: ${JSON.stringify(data)}`);
     await this.ecstService.handleFollowCreated(data);
   }
 
   @EventPattern('follow.removed')
   async handleFollowRemoved(@Payload() data: FollowRemovedEventDto) {
     this.logger.log('Evento recibido — follow.removed');
+    this.logger.debug(`Payload: ${JSON.stringify(data)}`);
     await this.ecstService.handleFollowRemoved(data);
   }
 
@@ -77,7 +79,9 @@ export class NotificationConsumerController {
       meta: data.meta,
     };
 
-    this.logger.debug(`Token generado para usuario: ${normalizedData.userId || 'unknown'}`);
+    this.logger.debug(
+      `Token generado para usuario: ${normalizedData.userId || 'unknown'}`,
+    );
     this.logger.debug(JSON.stringify(normalizedData));
 
     // Currently no action required in notifications service for this event.

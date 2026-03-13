@@ -33,6 +33,9 @@ services:
       - PORT=${PORT}
       - MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@notifications-db:27017/${MONGO_DB_NAME}?authSource=admin
       - RABBIT_URL=amqp://guest:guest@central-rabbit:5672
+      - RABBIT_EXCHANGE=${RABBIT_EXCHANGE:-riff_events}
+      - RABBIT_QUEUE=${RABBIT_QUEUE:-notifications_queue}
+      - RABBIT_BINDING_KEY=${RABBIT_BINDING_KEY:-#}
       - RESEND_KEY=${RESEND_KEY}
       - FRONT_URL=${FRONT_URL}
     depends_on:

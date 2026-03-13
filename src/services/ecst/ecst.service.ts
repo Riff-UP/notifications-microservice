@@ -28,8 +28,16 @@ export class EcstService {
     this.logger.log(
       `follow.created: ${data.follower_id} → ${data.followed_id}`,
     );
+    this.logger.debug(`Payload recibido: ${JSON.stringify(data)}`);
 
-    await this.followRefModel.updateOne(
+    if (!data.follower_id || !data.followed_id) {
+      this.logger.error(
+        `follow.created con campos faltantes: ${JSON.stringify(data)}`,
+      );
+      return;
+    }
+
+    const result = await this.followRefModel.updateOne(
       { follower_id: data.follower_id, followed_id: data.followed_id },
       {
         $set: {
@@ -41,6 +49,13 @@ export class EcstService {
       },
       { upsert: true },
     );
+
+    this.logger.log(
+      `FollowRef upsert — matched: ${result.matchedCount}, upserted: ${result.upsertedCount}`,
+    );
+
+    const total = await this.followRefModel.countDocuments();
+    this.logger.debug(`Total follow_refs en BD: ${total}`);
   }
 
   async handleFollowRemoved(data: {
@@ -50,11 +65,23 @@ export class EcstService {
     this.logger.log(
       `follow.removed: ${data.follower_id} → ${data.followed_id}`,
     );
+    this.logger.debug(`Payload recibido: ${JSON.stringify(data)}`);
 
-    await this.followRefModel.deleteOne({
+    if (!data.follower_id || !data.followed_id) {
+      this.logger.error(
+        `follow.removed con campos faltantes: ${JSON.stringify(data)}`,
+      );
+      return;
+    }
+
+    const result = await this.followRefModel.deleteOne({
       follower_id: data.follower_id,
       followed_id: data.followed_id,
     });
+
+    this.logger.log(
+      `FollowRef eliminado — deletedCount: ${result.deletedCount}`,
+    );
   }
 
   // ─── Fase 3: Procesamiento de eventos de contenido ────────────────
@@ -71,13 +98,20 @@ export class EcstService {
     );
 
     // 1. Buscar followers del autor en réplica local
+    this.logger.debug(
+      `Buscando followers con followed_id: "${payload.userId}"`,
+    );
+
+    const totalRefs = await this.followRefModel.countDocuments();
+    this.logger.debug(`Total registros en follow_refs: ${totalRefs}`);
+
     const followers = await this.followRefModel.find({
       followed_id: payload.userId,
     });
 
     if (followers.length === 0) {
-      this.logger.log(
-        `No followers found for user ${payload.userId}, skipping.`,
+      this.logger.warn(
+        `No followers found for user ${payload.userId}. Total follow_refs en BD: ${totalRefs}. Verifica que los eventos follow.created se estén publicando correctamente desde Users-MS.`,
       );
       return;
     }

@@ -27,7 +27,8 @@ export class PublisherService implements OnModuleInit, OnModuleDestroy {
 
   async publish(routingKey: string, payload: any) {
     if (!this.channel) throw new Error('Publisher channel not initialized');
-    const buffer = Buffer.from(JSON.stringify(payload));
+    const envelope = { pattern: routingKey, data: payload };
+    const buffer = Buffer.from(JSON.stringify(envelope));
     return this.channel.publish(this.EXCHANGE, routingKey, buffer);
   }
 

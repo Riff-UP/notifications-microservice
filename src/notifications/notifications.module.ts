@@ -11,6 +11,7 @@ import {
 import { FollowRef, FollowRefSchema } from './schemas/follow-ref.schema';
 import { ResetPasswordService } from '../services/password-reset/reset-password.service';
 import { MailService } from '../services/mail/mail.service';
+import { RabbitConsumerService } from '../common/rabbit-consumer.service';
 
 @Module({
   controllers: [NotificationsController, NotificationConsumerController],
@@ -19,6 +20,7 @@ import { MailService } from '../services/mail/mail.service';
     EcstService,
     ResetPasswordService,
     MailService,
+    RabbitConsumerService,
   ],
   imports: [
     MongooseModule.forFeature([
