@@ -10,8 +10,21 @@ interface EnvVars {
   DOMAIN?: string;
   RESEND_KEY: string;
   MONGO_URI: string;
-  FRONT_URL: string;
+  FRONT_URL?: string;
 }
+
+const normalizeBaseUrl = (value?: string): string | undefined => {
+  if (!value) return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+};
 
 const envSchema = joi
   .object({
@@ -23,7 +36,7 @@ const envSchema = joi
     DOMAIN: joi.string(),
     RESEND_KEY: joi.string(),
     MONGO_URI: joi.string().required(),
-    FRONT_URL: joi.string().required(),
+    FRONT_URL: joi.string(),
   })
   .unknown(true);
 
@@ -35,6 +48,13 @@ if (error) {
 
 const envVars: EnvVars = value;
 
+const resolvedFrontUrl =
+  normalizeBaseUrl(envVars.FRONT_URL) || normalizeBaseUrl(envVars.DOMAIN);
+
+if (!resolvedFrontUrl) {
+  throw new Error('Config validation error: FRONT_URL or DOMAIN is required');
+}
+
 export const envs = {
   port: envVars.PORT,
   host: process.env.NOTIFICATIONS_MS_HOST || '0.0.0.0',
@@ -45,5 +65,5 @@ export const envs = {
   domain: envVars.DOMAIN || 'resend.dev',
   resend_key: envVars.RESEND_KEY,
   mongoUri: envVars.MONGO_URI,
-  frontUrl: envVars.FRONT_URL,
+  frontUrl: resolvedFrontUrl,
 };
