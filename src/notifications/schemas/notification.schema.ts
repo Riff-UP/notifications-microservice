@@ -10,5 +10,23 @@ export class Notification {
 
   @Prop({ required: true })
   message!: string;
+
+  @Prop()
+  artistId?: string;
+
+  @Prop()
+  artistName?: string;
+
+  @Prop()
+  artistSlug?: string;
+
+  @Prop()
+  artistAvatar?: string;
+
+  @Prop()
+  postId?: string;
+
+  @Prop()
+  eventId?: string;
 }
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

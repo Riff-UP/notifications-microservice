@@ -90,6 +90,9 @@ export class EcstService {
     type: string;
     message: string;
     userId: string;
+    artistName?: string;
+    artistSlug?: string;
+    artistAvatar?: string;
     postId?: string;
     eventId?: string;
   }) {
@@ -128,6 +131,12 @@ export class EcstService {
           userIdReceiver: follower.follower_id,
           type: payload.type,
           message: payload.message,
+          artistId: payload.userId,
+          artistName: payload.artistName,
+          artistSlug: payload.artistSlug,
+          artistAvatar: payload.artistAvatar,
+          postId: payload.postId,
+          eventId: payload.eventId,
         });
 
         // b) Enviar email

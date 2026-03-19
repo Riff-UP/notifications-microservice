@@ -15,6 +15,18 @@ export class ContentEventDto {
 
   @IsString()
   @IsOptional()
+  artistName?: string;
+
+  @IsString()
+  @IsOptional()
+  artistSlug?: string;
+
+  @IsString()
+  @IsOptional()
+  artistAvatar?: string;
+
+  @IsString()
+  @IsOptional()
   postId?: string;
 
   @IsString()
