@@ -41,6 +41,7 @@ export class MailService {
     followerName: string;
     type: string;
     message: string;
+    artistName?: string;
   }) {
     this.logger.log(
       `Sending content notification to ${options.to} [${options.type}]`,
@@ -54,6 +55,7 @@ export class MailService {
         options.followerName,
         options.type,
         options.message,
+        options.artistName,
       ),
     });
 

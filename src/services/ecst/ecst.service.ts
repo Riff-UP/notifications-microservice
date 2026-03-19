@@ -9,6 +9,22 @@ import { MailService } from '../mail/mail.service';
 export class EcstService {
   private readonly logger = new Logger(EcstService.name);
 
+  private buildDisplayMessage(payload: {
+    message: string;
+    artistName?: string;
+  }): string {
+    if (!payload.artistName) return payload.message;
+
+    const normalizedMessage = payload.message.toLowerCase();
+    const normalizedArtist = payload.artistName.toLowerCase();
+
+    if (normalizedMessage.includes(normalizedArtist)) {
+      return payload.message;
+    }
+
+    return `${payload.artistName}: ${payload.message}`;
+  }
+
   constructor(
     @InjectModel(FollowRef.name)
     private readonly followRefModel: Model<FollowRef>,
@@ -96,6 +112,8 @@ export class EcstService {
     postId?: string;
     eventId?: string;
   }) {
+    const displayMessage = this.buildDisplayMessage(payload);
+
     this.logger.log(
       `Content event [${payload.type}] from user ${payload.userId}`,
     );
@@ -130,7 +148,7 @@ export class EcstService {
         await this.notificationModel.create({
           userIdReceiver: follower.follower_id,
           type: payload.type,
-          message: payload.message,
+          message: displayMessage,
           artistId: payload.userId,
           artistName: payload.artistName,
           artistSlug: payload.artistSlug,
@@ -144,7 +162,8 @@ export class EcstService {
           to: follower.follower_email,
           followerName: follower.follower_name,
           type: payload.type,
-          message: payload.message,
+          message: displayMessage,
+          artistName: payload.artistName,
         });
       }),
     );

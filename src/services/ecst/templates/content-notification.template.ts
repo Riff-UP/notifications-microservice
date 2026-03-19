@@ -21,6 +21,7 @@ export function contentNotificationTemplate(
   followerName: string,
   type: string,
   message: string,
+  artistName?: string,
 ): string {
   const label = typeLabels[type] ?? type;
   const accent = typeColors[type] ?? '#2f9bff';
@@ -65,6 +66,15 @@ export function contentNotificationTemplate(
                           ${message}
                         </td>
                       </tr>
+                      ${
+                        artistName
+                          ? `<tr>
+                        <td style="padding:0 16px 16px 16px; font-size:13px; line-height:1.5; color:#9aa3b2;">
+                          Artista: <strong style="color:#e5e7eb;">${artistName}</strong>
+                        </td>
+                      </tr>`
+                          : ''
+                      }
                     </table>
                   </td>
                 </tr>
