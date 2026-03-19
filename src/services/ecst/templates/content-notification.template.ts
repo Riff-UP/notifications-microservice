@@ -27,7 +27,7 @@ export function contentNotificationTemplate(
 ): string {
   const label = typeLabels[type] ?? type;
   const accent = typeColors[type] ?? '#2f9bff';
-  const contentLink = postUrl ?? deepLink;
+  const contentLink = deepLink ?? postUrl;
 
   return `
     <!DOCTYPE html>

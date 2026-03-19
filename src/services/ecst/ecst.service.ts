@@ -213,7 +213,7 @@ export class EcstService {
           artistSlug: payload.artistSlug,
           artistAvatar: payload.artistAvatar,
           postId: payload.postId,
-          postUrl: normalizedPostUrl,
+          postUrl: resolvedContentUrl,
           deepLink: resolvedContentUrl,
           eventId: payload.eventId,
         });
@@ -225,7 +225,7 @@ export class EcstService {
           type: payload.type,
           message: displayMessage,
           artistName: payload.artistName,
-          postUrl: normalizedPostUrl,
+          postUrl: resolvedContentUrl,
           deepLink: resolvedContentUrl,
         });
       }),
