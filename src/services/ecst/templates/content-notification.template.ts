@@ -22,9 +22,12 @@ export function contentNotificationTemplate(
   type: string,
   message: string,
   artistName?: string,
+  postUrl?: string,
+  deepLink?: string,
 ): string {
   const label = typeLabels[type] ?? type;
   const accent = typeColors[type] ?? '#2f9bff';
+  const contentLink = postUrl ?? deepLink;
 
   return `
     <!DOCTYPE html>
@@ -71,6 +74,17 @@ export function contentNotificationTemplate(
                           ? `<tr>
                         <td style="padding:0 16px 16px 16px; font-size:13px; line-height:1.5; color:#9aa3b2;">
                           Artista: <strong style="color:#e5e7eb;">${artistName}</strong>
+                        </td>
+                      </tr>`
+                          : ''
+                      }
+                      ${
+                        contentLink
+                          ? `<tr>
+                        <td style="padding:0 16px 18px 16px;">
+                          <a href="${contentLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:10px 14px; border-radius:10px; text-decoration:none; font-size:13px; font-weight:700; letter-spacing:0.2px; color:#ffffff; background:${accent};">
+                            Ver publicacion
+                          </a>
                         </td>
                       </tr>`
                           : ''

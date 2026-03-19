@@ -42,6 +42,8 @@ export class MailService {
     type: string;
     message: string;
     artistName?: string;
+    postUrl?: string;
+    deepLink?: string;
   }) {
     this.logger.log(
       `Sending content notification to ${options.to} [${options.type}]`,
@@ -56,6 +58,8 @@ export class MailService {
         options.type,
         options.message,
         options.artistName,
+        options.postUrl,
+        options.deepLink,
       ),
     });
 

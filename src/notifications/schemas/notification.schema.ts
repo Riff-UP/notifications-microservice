@@ -27,6 +27,12 @@ export class Notification {
   postId?: string;
 
   @Prop()
+  postUrl?: string;
+
+  @Prop()
+  deepLink?: string;
+
+  @Prop()
   eventId?: string;
 }
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

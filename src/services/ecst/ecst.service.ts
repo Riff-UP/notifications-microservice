@@ -110,6 +110,8 @@ export class EcstService {
     artistSlug?: string;
     artistAvatar?: string;
     postId?: string;
+    postUrl?: string;
+    deepLink?: string;
     eventId?: string;
   }) {
     const displayMessage = this.buildDisplayMessage(payload);
@@ -154,6 +156,8 @@ export class EcstService {
           artistSlug: payload.artistSlug,
           artistAvatar: payload.artistAvatar,
           postId: payload.postId,
+          postUrl: payload.postUrl,
+          deepLink: payload.deepLink,
           eventId: payload.eventId,
         });
 
@@ -164,6 +168,8 @@ export class EcstService {
           type: payload.type,
           message: displayMessage,
           artistName: payload.artistName,
+          postUrl: payload.postUrl,
+          deepLink: payload.deepLink,
         });
       }),
     );

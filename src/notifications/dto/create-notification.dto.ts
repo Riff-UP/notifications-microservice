@@ -35,5 +35,13 @@ export class CreateNotificationDto {
 
   @IsString()
   @IsOptional()
+  postUrl?: string;
+
+  @IsString()
+  @IsOptional()
+  deepLink?: string;
+
+  @IsString()
+  @IsOptional()
   eventId?: string;
 }
