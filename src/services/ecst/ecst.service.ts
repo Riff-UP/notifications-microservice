@@ -47,6 +47,17 @@ export class EcstService {
     return this.normalizeUrl(artistPath);
   }
 
+  private shouldPreferArtistLink(contentUrl?: string): boolean {
+    if (!contentUrl) return false;
+
+    try {
+      const parsed = new URL(contentUrl);
+      return /^\/(posts|events)\/.+/.test(parsed.pathname);
+    } catch {
+      return /^\/(posts|events)\/.+/.test(contentUrl);
+    }
+  }
+
   private buildDisplayMessage(payload: {
     message: string;
     artistName?: string;
@@ -156,8 +167,11 @@ export class EcstService {
     const normalizedPostUrl = this.normalizeUrl(payload.postUrl);
     const normalizedDeepLink = this.normalizeUrl(payload.deepLink);
     const fallbackArtistUrl = this.buildArtistFallbackLink(payload);
+    const primaryContentUrl = normalizedPostUrl ?? normalizedDeepLink;
     const resolvedContentUrl =
-      normalizedPostUrl ?? normalizedDeepLink ?? fallbackArtistUrl;
+      this.shouldPreferArtistLink(primaryContentUrl) && fallbackArtistUrl
+        ? fallbackArtistUrl
+        : primaryContentUrl ?? fallbackArtistUrl;
 
     this.logger.log(
       `Content event [${payload.type}] from user ${payload.userId}`,
