@@ -34,6 +34,19 @@ export class EcstService {
     }
   }
 
+  private buildArtistFallbackLink(payload: {
+    artistSlug?: string;
+    userId: string;
+  }): string | undefined {
+    const artistPath = payload.artistSlug
+      ? `/artist/${payload.artistSlug}`
+      : payload.userId
+        ? `/artist/${payload.userId}`
+        : undefined;
+
+    return this.normalizeUrl(artistPath);
+  }
+
   private buildDisplayMessage(payload: {
     message: string;
     artistName?: string;
@@ -142,6 +155,9 @@ export class EcstService {
     const displayMessage = this.buildDisplayMessage(payload);
     const normalizedPostUrl = this.normalizeUrl(payload.postUrl);
     const normalizedDeepLink = this.normalizeUrl(payload.deepLink);
+    const fallbackArtistUrl = this.buildArtistFallbackLink(payload);
+    const resolvedContentUrl =
+      normalizedPostUrl ?? normalizedDeepLink ?? fallbackArtistUrl;
 
     this.logger.log(
       `Content event [${payload.type}] from user ${payload.userId}`,
@@ -184,7 +200,7 @@ export class EcstService {
           artistAvatar: payload.artistAvatar,
           postId: payload.postId,
           postUrl: normalizedPostUrl,
-          deepLink: normalizedDeepLink,
+          deepLink: resolvedContentUrl,
           eventId: payload.eventId,
         });
 
@@ -196,7 +212,7 @@ export class EcstService {
           message: displayMessage,
           artistName: payload.artistName,
           postUrl: normalizedPostUrl,
-          deepLink: normalizedDeepLink,
+          deepLink: resolvedContentUrl,
         });
       }),
     );

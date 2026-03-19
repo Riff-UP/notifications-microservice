@@ -83,7 +83,7 @@ export function contentNotificationTemplate(
                           ? `<tr>
                         <td style="padding:0 16px 18px 16px;">
                           <a href="${contentLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:10px 14px; border-radius:10px; text-decoration:none; font-size:13px; font-weight:700; letter-spacing:0.2px; color:#ffffff; background:${accent};">
-                            Ver publicacion
+                            Ver en Riff
                           </a>
                         </td>
                       </tr>`
