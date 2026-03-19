@@ -4,10 +4,35 @@ import { Model } from 'mongoose';
 import { FollowRef } from '../../notifications/schemas/follow-ref.schema';
 import { Notification } from '../../notifications/schemas/notification.schema';
 import { MailService } from '../mail/mail.service';
+import { envs } from '../../config';
 
 @Injectable()
 export class EcstService {
   private readonly logger = new Logger(EcstService.name);
+
+  private normalizeUrl(urlValue?: string): string | undefined {
+    if (!urlValue) return undefined;
+
+    const trimmed = urlValue.trim();
+    if (!trimmed) return undefined;
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+
+    const baseUrl = envs.frontUrl?.trim();
+    if (!baseUrl) {
+      return trimmed;
+    }
+
+    try {
+      const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+      return new URL(trimmed, normalizedBase).toString();
+    } catch {
+      this.logger.warn(`Invalid content URL received: ${trimmed}`);
+      return undefined;
+    }
+  }
 
   private buildDisplayMessage(payload: {
     message: string;
@@ -115,6 +140,8 @@ export class EcstService {
     eventId?: string;
   }) {
     const displayMessage = this.buildDisplayMessage(payload);
+    const normalizedPostUrl = this.normalizeUrl(payload.postUrl);
+    const normalizedDeepLink = this.normalizeUrl(payload.deepLink);
 
     this.logger.log(
       `Content event [${payload.type}] from user ${payload.userId}`,
@@ -156,8 +183,8 @@ export class EcstService {
           artistSlug: payload.artistSlug,
           artistAvatar: payload.artistAvatar,
           postId: payload.postId,
-          postUrl: payload.postUrl,
-          deepLink: payload.deepLink,
+          postUrl: normalizedPostUrl,
+          deepLink: normalizedDeepLink,
           eventId: payload.eventId,
         });
 
@@ -168,8 +195,8 @@ export class EcstService {
           type: payload.type,
           message: displayMessage,
           artistName: payload.artistName,
-          postUrl: payload.postUrl,
-          deepLink: payload.deepLink,
+          postUrl: normalizedPostUrl,
+          deepLink: normalizedDeepLink,
         });
       }),
     );
