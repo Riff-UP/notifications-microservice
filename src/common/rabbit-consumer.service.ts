@@ -10,17 +10,23 @@ import {
   ChannelWrapper,
 } from 'amqp-connection-manager';
 import { Channel, ConsumeMessage } from 'amqplib';
+import { RpcException } from '@nestjs/microservices';
 import { ResetPasswordEventDto } from '../notifications/dto/reset-password-event.dto';
 import { FollowCreatedEventDto } from '../notifications/dto/follow-created-event.dto';
 import { FollowRemovedEventDto } from '../notifications/dto/follow-removed-event.dto';
 import { ContentEventDto } from '../notifications/dto/content-event.dto';
+import { CreateNotificationDto } from '../notifications/dto/create-notification.dto';
+import { UpdateNotificationDto } from '../notifications/dto/update-notification.dto';
+import { PaginationDto } from '../notifications/dto/pagination.dto';
 import { envs } from '../config';
 import { ResetPasswordService } from '../services/password-reset/reset-password.service';
 import { EcstService } from '../services/ecst/ecst.service';
+import { NotificationsCrudService } from '../services/notifications/notifications-crud.service';
 
 interface RmqEnvelope {
   pattern: string;
   data: unknown;
+  id?: string;
 }
 
 @Injectable()
@@ -36,6 +42,7 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly resetPasswordService: ResetPasswordService,
     private readonly ecstService: EcstService,
+    private readonly notificationsCrudService: NotificationsCrudService,
   ) {}
 
   onModuleInit() {
@@ -86,67 +93,168 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
   ): Promise<void> {
     if (!msg) return;
 
+    let raw: RmqEnvelope | Record<string, unknown> | null = null;
+
     try {
-      const raw = JSON.parse(msg.content.toString()) as RmqEnvelope | Record<string, unknown>;
-      const pattern = (raw as RmqEnvelope).pattern ?? null;
+      raw = JSON.parse(msg.content.toString()) as RmqEnvelope | Record<string, unknown>;
+      const pattern =
+        (raw as RmqEnvelope).pattern ?? msg.fields.routingKey ?? null;
       const data = (raw as RmqEnvelope).data ?? raw;
 
       this.logger.debug(`Mensaje recibido — pattern: ${pattern}`);
-      await this.dispatch(pattern, data);
+      const response = await this.dispatch(pattern, data);
+      await this.replyIfNeeded(channel, msg, raw, response);
       channel.ack(msg);
     } catch (err: unknown) {
       const error = err as Error;
+      await this.replyWithErrorIfNeeded(channel, msg, raw, err);
       this.logger.error(
         `Error procesando mensaje: ${error.message}`,
         error.stack,
       );
+
+      // En requests RPC ya se respondió el error al caller; no reencolar.
+      if (msg.properties.replyTo) {
+        channel.ack(msg);
+        return;
+      }
+
       channel.nack(msg, false, false);
     }
   }
 
-  private async dispatch(pattern: string | null, data: unknown): Promise<void> {
+  private async dispatch(pattern: string | null, data: unknown): Promise<unknown> {
     switch (pattern) {
       case 'send.resetPassword':
         await this.resetPasswordService.sendPassWordResetEmail(
           data as ResetPasswordEventDto,
         );
-        break;
+        return undefined;
       case 'follow.created':
         await this.ecstService.handleFollowCreated(
           data as FollowCreatedEventDto,
         );
-        break;
+        return undefined;
       case 'follow.removed':
         await this.ecstService.handleFollowRemoved(
           data as FollowRemovedEventDto,
         );
-        break;
+        return undefined;
       case 'post.created':
         await this.ecstService.handleContentEvent(data as ContentEventDto);
-        break;
+        return undefined;
       case 'event.created':
         await this.ecstService.handleContentEvent(data as ContentEventDto);
-        break;
+        return undefined;
       case 'event.updated':
         await this.ecstService.handleContentEvent(data as ContentEventDto);
-        break;
+        return undefined;
       case 'event.cancelled':
         await this.ecstService.handleContentEvent(data as ContentEventDto);
-        break;
+        return undefined;
       case 'auth.tokenGenerated':
         this.logger.log('Evento recibido — auth.tokenGenerated');
         this.logger.debug(JSON.stringify(data));
-        break;
+        return undefined;
       case 'createNotification':
-        this.logger.debug(
-          'Pattern createNotification recibido en exchange de eventos; se ignora en este consumer',
+        return this.notificationsCrudService.create(
+          data as CreateNotificationDto,
         );
-        break;
+      case 'findAllNotifications':
+        return this.notificationsCrudService.findAll((data ?? {}) as PaginationDto);
+      case 'findNotificationsByUser': {
+        const payload = data as {
+          userIdReceiver: string;
+          pagination?: PaginationDto;
+        };
+        return this.notificationsCrudService.findByUser(
+          payload.userIdReceiver,
+          payload.pagination ?? {},
+        );
+      }
+      case 'findOneNotification':
+        return this.notificationsCrudService.findOne(
+          typeof data === 'string'
+            ? data
+            : ((data as { id?: string }).id ?? ''),
+        );
+      case 'updateNotification': {
+        const payload = data as UpdateNotificationDto;
+        return this.notificationsCrudService.update(payload.id, payload);
+      }
+      case 'removeNotification':
+        return this.notificationsCrudService.remove(
+          typeof data === 'string'
+            ? data
+            : ((data as { id?: string }).id ?? ''),
+        );
       default:
         this.logger.warn(
           `Pattern desconocido o sin envelope: "${pattern}" — ignorando`,
         );
+        return undefined;
     }
+  }
+
+  private async replyIfNeeded(
+    channel: Channel,
+    msg: ConsumeMessage,
+    raw: RmqEnvelope | Record<string, unknown>,
+    response: unknown,
+  ): Promise<void> {
+    if (!msg.properties.replyTo) return;
+
+    const packetId =
+      (raw as RmqEnvelope).id ?? msg.properties.correlationId ?? undefined;
+
+    const replyPacket = {
+      id: packetId,
+      response,
+      isDisposed: true,
+    };
+
+    channel.sendToQueue(
+      msg.properties.replyTo,
+      Buffer.from(JSON.stringify(replyPacket)),
+      {
+        correlationId: msg.properties.correlationId,
+        contentType: 'application/json',
+      },
+    );
+  }
+
+  private async replyWithErrorIfNeeded(
+    channel: Channel,
+    msg: ConsumeMessage,
+    raw: RmqEnvelope | Record<string, unknown> | null,
+    err: unknown,
+  ): Promise<void> {
+    if (!msg.properties.replyTo) return;
+
+    const packetId =
+      raw && typeof raw === 'object' && 'id' in raw
+        ? (raw as RmqEnvelope).id
+        : msg.properties.correlationId ?? undefined;
+
+    const rpcPayload =
+      err instanceof RpcException
+        ? err.getError()
+        : { message: (err as Error).message ?? 'Unhandled error' };
+
+    const replyPacket = {
+      id: packetId,
+      err: rpcPayload,
+      isDisposed: true,
+    };
+
+    channel.sendToQueue(
+      msg.properties.replyTo,
+      Buffer.from(JSON.stringify(replyPacket)),
+      {
+        correlationId: msg.properties.correlationId,
+        contentType: 'application/json',
+      },
+    );
   }
 
   async onModuleDestroy() {
