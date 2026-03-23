@@ -29,6 +29,13 @@ interface RmqEnvelope {
   id?: string;
 }
 
+const OUT_OF_SCOPE_METRIC_PATTERNS: RegExp[] = [
+  /followers?.*total/i,
+  /attendance.*total/i,
+  /rating.*average/i,
+  /reactions?.*total/i,
+];
+
 @Injectable()
 export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitConsumerService.name);
@@ -101,6 +108,25 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
         (raw as RmqEnvelope).pattern ?? msg.fields.routingKey ?? null;
       const data = (raw as RmqEnvelope).data ?? raw;
 
+      if (this.isOutOfScopeMetricPattern(pattern)) {
+        const message =
+          `Pattern fuera de alcance en Notifications-MS: "${pattern}". ` +
+          'Consultar Users-MS (followers total) o Content-MS (attendance/rating/reactions).';
+
+        this.logger.warn(message);
+
+        if (msg.properties.replyTo) {
+          throw new RpcException({
+            statusCode: 400,
+            code: 'WRONG_MICROSERVICE',
+            message,
+          });
+        }
+
+        channel.ack(msg);
+        return;
+      }
+
       this.logger.debug(`Mensaje recibido — pattern: ${pattern}`);
       const response = await this.dispatch(pattern, data);
       await this.replyIfNeeded(channel, msg, raw, response);
@@ -121,6 +147,11 @@ export class RabbitConsumerService implements OnModuleInit, OnModuleDestroy {
 
       channel.nack(msg, false, false);
     }
+  }
+
+  private isOutOfScopeMetricPattern(pattern: string | null): boolean {
+    if (!pattern) return false;
+    return OUT_OF_SCOPE_METRIC_PATTERNS.some((rx) => rx.test(pattern));
   }
 
   private async dispatch(pattern: string | null, data: unknown): Promise<unknown> {
